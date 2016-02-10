@@ -96,6 +96,8 @@ def main():
             maxwell_binlog_name = row[1]
             maxwell_binlog_position = row[2]
 
+            cursor.close()
+
             backlog = calculateBacklog(binlog_name, binlog_position, maxwell_binlog_name, maxwell_binlog_position)
             setGaugeValue('maxwell:backlog_bytes', ['host'], [section], backlog)
 
