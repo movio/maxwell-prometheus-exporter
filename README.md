@@ -1,5 +1,5 @@
-# samza-prometheus-exporter
-Feed [Apache Samza](http://samza.apache.org/) metrics into [Prometheus](http://prometheus.io/)
+# maxwell-prometheus-exporter
+Feed [Maxwell](http://maxwells-daemon.io/) metrics into [Prometheus](http://prometheus.io/)
 
 # Installation
 [This blog post](https://www.digitalocean.com/community/tutorials/how-to-install-prometheus-using-docker-on-ubuntu-14-04)
@@ -10,29 +10,27 @@ from Ditial Ocean explains how to setup Prometheus, the node exporter and Grafan
 Build the docker image:
 
 ```
-sudo docker build -t samza-prometheus-exporter:0.1.2 .
+sudo docker build -t maxwell-prometheus-exporter:0.1.2 .
 ```
 
 Then run it:
 
 ```
-sudo docker run -d --name samza-prometheus-exporter -p 8080:8080 \
-    -e "BROKERS=broker1:9092,broker2:9092" \
-    -e "TOPIC=samza-metrics" \
-    -e "PORT=8080" \
-    samza-prometheus-exporter:0.1.2
+sudo docker run -d --name maxwell-prometheus-exporter -p 8081:8081 \
+    -v /etc/maxwell-prometheus-exporter.cfg:/etc/maxwell-prometheus-exporter.cfg \
+    maxwell-prometheus-exporter:0.1.2
 ```
 
-## Using pip3
+## Using pip
 ```
-sudo pip3 install .
+sudo pip install .
 ```
-And then run `samza-prometheus-exporter`
+And then run `maxwell-prometheus-exporter`
 
 # Hacking
 To install the package in editable development mode:
 ```
-sudo pip3 install -e .
+sudo pip install -e .
 ```
 
 # Acknowledgements
