@@ -68,23 +68,19 @@ def main():
 
     start_http_server(config.getint('exporter', 'port'))
 
-    connections = {}
-    for section in config.sections():
-        if section == 'exporter': continue
-        host_config = {
-            'user': config.get(section, 'username'),
-            'password': config.get(section, 'password'),
-            'host': config.get(section, 'hostname'),
-            'port': config.getint(section, 'port'),
-            'database': 'maxwell',
-            'raise_on_warnings': True,
-        }
-        connection = connector.connect(**host_config)
-        connections[section] = connection
-
     print "Starting loop"
     while True:
-        for section, connection in connections.iteritems():
+        for section in config.sections():
+            if section == 'exporter': continue
+            host_config = {
+                'user': config.get(section, 'username'),
+                'password': config.get(section, 'password'),
+                'host': config.get(section, 'hostname'),
+                'port': config.getint(section, 'port'),
+                'database': 'maxwell',
+                'raise_on_warnings': True,
+            }
+            connection = connector.connect(**host_config)
             cursor = connection.cursor()
             cursor.execute("SHOW MASTER STATUS")
             row = cursor.fetchall()[0]
@@ -97,6 +93,7 @@ def main():
             maxwell_binlog_position = row[2]
 
             cursor.close()
+            connection.close()
 
             backlog = calculateBacklog(binlog_name, binlog_position, maxwell_binlog_name, maxwell_binlog_position)
             setGaugeValue('maxwell:backlog_bytes', ['host'], [section], backlog)
