@@ -96,6 +96,8 @@ def main():
             connection.close()
 
             backlog = calculateBacklog(binlog_name, binlog_position, maxwell_binlog_name, maxwell_binlog_position)
+            setGaugeValue('maxwell:master_binlog_position_bytes', ['host'], [section], binlog_position)
+            setGaugeValue('maxwell:maxwell_binlog_position_bytes', ['host'], [section], maxwell_binlog_position)
             setGaugeValue('maxwell:backlog_bytes', ['host'], [section], backlog)
 
         time.sleep(config.getint('exporter', 'refresh_interval_ms') / 1000.0)

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='maxwell-prometheus-exporter',
-    version='0.1.2',
+    version='0.2.0',
     description='Maxwell metrics Prometheus exporter',
     url='https://github.com/movio/maxwell-prometheus-exporter',
     author='Nicolas Maquet and Nan Wu',
