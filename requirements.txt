@@ -1,0 +1,3 @@
+configparser==3.5.0
+mysql-connector==2.1.4
+prometheus_client==0.0.19

@@ -84,11 +84,10 @@ def main():
             }
             try:
                 connection = connector.connect(**host_config)
-            except e:
+            except Exception as e:
                 if config.getboolean('exporter', 'die_on_connection_failure'):
                     raise
-                print "Failed to connect to MySQL!"
-                print e
+                print 'Failed to connect to MySQL:', e
                 continue
             cursor = connection.cursor()
             cursor.execute("SHOW MASTER STATUS")
