@@ -2,8 +2,9 @@
 
 import sys
 import time
-from mysql import connector
+import os
 import argparse
+from mysql import connector
 import configparser
 from prometheus_client import start_http_server, Gauge
 
@@ -64,6 +65,10 @@ def main():
                         help='path to config file')
     args = parser.parse_args()
     config = configparser.ConfigParser()
+
+    if not os.path.exists(args.config):
+        usage('Cannot find config: %s' % args.config)
+
     config.read(args.config)
 
     validate_config(config)
