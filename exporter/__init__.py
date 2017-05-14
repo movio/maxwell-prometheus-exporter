@@ -33,6 +33,8 @@ def validate_config(config):
         usage("could not find port option in section [exporter]")
     if not config.has_option('exporter', 'refresh_interval_ms'):
         usage("could not find refresh_interval_ms option in section [exporter]")
+    if not config.has_option('exporter', 'die_on_connection_failure'):
+        usage("could not find die_on_connection_failure option in section [exporter]")
     if config.sections() == ["exporter"]:
         usage("you must specify at least one host section")
 
@@ -80,7 +82,14 @@ def main():
                 'database': 'maxwell',
                 'raise_on_warnings': True,
             }
-            connection = connector.connect(**host_config)
+            try:
+                connection = connector.connect(**host_config)
+            except e:
+                if config.getboolean('exporter', 'die_on_connection_failure'):
+                    raise
+                print "Failed to connect to MySQL!"
+                print e
+                continue
             cursor = connection.cursor()
             cursor.execute("SHOW MASTER STATUS")
             row = cursor.fetchall()[0]
