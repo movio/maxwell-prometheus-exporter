@@ -60,20 +60,21 @@ def calculateBacklog(binlog_name, binlog_position, maxwell_binlog_name, maxwell_
     maxwell_ordinal = int(maxwell_binlog_name.split('.')[1])
     return (binlog_position - maxwell_binlog_position) + (BINLOG_FILE_SIZE_BYTES) * (ordinal - maxwell_ordinal)
 
+
 def create_logger():
     logger = logging.getLogger('maxwell-prometheus-exporter')
     logger.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('maxwell-prometheus-exporter.log')
+    fh.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
     return logger
 
 
 def main():
     parser = argparse.ArgumentParser(description='Feed Maxwell metrics into Prometheus.')
-    parser.add_argument('--config', metavar='CONFIG', type=str, required=True,
+    parser.add_argument('-c', '--config', metavar='CONFIG', type=str, required=True,
                         help='path to config file')
     args = parser.parse_args()
     config = configparser.ConfigParser()
