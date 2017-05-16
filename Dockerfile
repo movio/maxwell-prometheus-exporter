@@ -15,4 +15,4 @@ COPY exporter/*.py /usr/src/app/exporter/
 COPY setup.py /usr/src/app/
 RUN pip install -e .
 
-CMD python -u /usr/local/bin/maxwell-prometheus-exporter --config $CONFIG
+CMD python -u /usr/local/bin/maxwell-prometheus-exporter --config $CONFIG > maxwell-prometheus-exporter.log

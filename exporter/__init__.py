@@ -4,6 +4,8 @@ import sys
 import time
 import os
 import argparse
+import logging
+
 from mysql import connector
 import configparser
 from prometheus_client import start_http_server, Gauge
@@ -52,11 +54,21 @@ def validate_config(config):
 
 
 def calculateBacklog(binlog_name, binlog_position, maxwell_binlog_name, maxwell_binlog_position):
-    if (binlog_name == maxwell_binlog_name):
+    if binlog_name == maxwell_binlog_name:
         return binlog_position - maxwell_binlog_position
     ordinal = int(binlog_name.split('.')[1])
     maxwell_ordinal = int(maxwell_binlog_name.split('.')[1])
     return (binlog_position - maxwell_binlog_position) + (BINLOG_FILE_SIZE_BYTES) * (ordinal - maxwell_ordinal)
+
+def create_logger():
+    logger = logging.getLogger('maxwell-prometheus-exporter')
+    logger.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    return logger
 
 
 def main():
@@ -65,6 +77,7 @@ def main():
                         help='path to config file')
     args = parser.parse_args()
     config = configparser.ConfigParser()
+    logger = create_logger()
 
     if not os.path.exists(args.config):
         usage('Cannot find config: %s' % args.config)
@@ -75,10 +88,11 @@ def main():
 
     start_http_server(config.getint('exporter', 'port'))
 
-    print "Starting loop"
+    logger.info('Starting loop')
     while True:
         for section in config.sections():
             if section == 'exporter': continue
+            logger.info('Exporting section %s' % section)
             host_config = {
                 'user': config.get(section, 'username'),
                 'password': config.get(section, 'password'),
@@ -92,7 +106,7 @@ def main():
             except Exception as e:
                 if config.getboolean('exporter', 'die_on_connection_failure'):
                     raise
-                print 'Failed to connect to MySQL:', e
+                logger.error('Failed to connect to MySQL on %s: %s' % (section, e))
                 continue
             cursor = connection.cursor()
             cursor.execute("SHOW MASTER STATUS")
@@ -112,5 +126,6 @@ def main():
             setGaugeValue('maxwell:master_binlog_position_bytes', ['host'], [section], binlog_position)
             setGaugeValue('maxwell:maxwell_binlog_position_bytes', ['host'], [section], maxwell_binlog_position)
             setGaugeValue('maxwell:backlog_bytes', ['host'], [section], backlog)
+            logger.info('Section %s binlog position: %d / %d' % (section, maxwell_binlog_position, binlog_position))
 
         time.sleep(config.getint('exporter', 'refresh_interval_ms') / 1000.0)
